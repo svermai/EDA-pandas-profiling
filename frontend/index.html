@@ -1,41 +1,96 @@
-<!-- frontend/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flask EDA</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EDA in Minutes</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f4f4f9;
+    }
+
+    .container {
+      text-align: center;
+      max-width: 600px;
+      background-color: #fff;
+      padding: 20px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    p {
+      color: #666;
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+
+    input[type="file"] {
+      margin: 20px 0;
+    }
+
+    button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+  </style>
 </head>
 <body>
-    <h1>Upload CSV for EDA</h1>
-    <input type="file" id="fileInput" accept=".csv" />
-    <button id="uploadButton">Upload</button>
+  <div class="container">
+    <h1>Welcome to EDA in Minutes</h1>
+    <p>Upload your CSV file and get an Exploratory Data Analysis (EDA) report in just a few minutes!</p>
+    
+    <form id="upload-form" method="post" enctype="multipart/form-data">
+      <input type="file" id="file-input" name="file" accept=".csv" required>
+      <br>
+      <button type="submit">Upload & Generate Report</button>
+    </form>
 
-    <script>
-        document.getElementById('uploadButton').addEventListener('click', async () => {
-            const fileInput = document.getElementById('fileInput');
-            const file = fileInput.files[0];
+    <div id="message"></div>
+  </div>
 
-            if (!file) {
-                alert('Please select a file first.');
-                return;
-            }
+  <script>
+    document.getElementById('upload-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      const messageDiv = document.getElementById('message');
+      messageDiv.innerHTML = "Processing... Please wait!";
 
-            const formData = new FormData();
-            formData.append('file', file);
-
-            try {
-                const response = await fetch('https://eda-pandas-profiling.onrender.com/upload', {
-                    method: 'POST',
-                    body: formData
-                });
-                const result = await response.json();
-                alert(JSON.stringify(result));
-            } catch (error) {
-                console.error('Error:', error);
-            }
+      try {
+        const response = await fetch('https://eda-pandas-profiling.onrender.com/upload', {
+          method: 'POST',
+          body: formData
         });
-    </script>
+
+        if (response.ok) {
+          messageDiv.innerHTML = "Your report has been generated! <a href='download-report-url'>Download Here</a>";
+        } else {
+          messageDiv.innerHTML = "Error generating report.";
+        }
+      } catch (error) {
+        messageDiv.innerHTML = "Failed to upload file. Please try again.";
+      }
+    });
+  </script>
 </body>
 </html>
 

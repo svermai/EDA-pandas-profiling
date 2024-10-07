@@ -1,13 +1,14 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from ydata_profiling import ProfileReport
 import pandas as pd
 import os
-import logging
 
 app = Flask(__name__)
+CORS(app)  # Enable Cross-Origin Resource Sharing
 
-# Enable logging
-logging.basicConfig(level=logging.DEBUG)
+# Set the static folder for storing the report
+STATIC_DIR = os.path.join(os.getcwd(), "static")
 
 @app.route('/', methods=['GET'])
 def home():
@@ -15,29 +16,19 @@ def home():
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
-    try:
-        file = request.files['file']
-        app.logger.debug(f"Received file: {file.filename}")
-
-        # Process the CSV and generate the HTML report
-        df = pd.read_csv(file)
-        app.logger.debug(f"Dataframe shape: {df.shape}")
-
-        profile = ProfileReport(df, title="EDA Report")
-        report_path = os.path.join("static", "EDA_report.html")
-
-        # Ensure the static directory exists
-        os.makedirs("static", exist_ok=True)
-
-        profile.to_file(report_path)
-        app.logger.debug(f"Report saved to: {report_path}")
-        
-        # Return the path to the generated file
-        return jsonify({"report_url": request.host_url + report_path})
+    file = request.files['file']
     
-    except Exception as e:
-        app.logger.error(f"Error processing file: {e}")
-        return jsonify({"error": "Failed to process file"}), 500
+    # Ensure static directory exists
+    if not os.path.exists(STATIC_DIR):
+        os.makedirs(STATIC_DIR)
+
+    # Generate the profile report from the uploaded CSV
+    profile = ProfileReport(pd.read_csv(file), title="EDA Report")
+    report_path = os.path.join(STATIC_DIR, "EDA_report.html")
+    profile.to_file(report_path)
+    
+    # Return the URL for the generated report
+    return jsonify({"report_url": request.host_url + "static/EDA_report.html"})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)

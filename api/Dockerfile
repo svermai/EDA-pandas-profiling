@@ -1,22 +1,19 @@
-# api/Dockerfile
-# Use a lightweight Python image
+# Base image
 FROM python:3.9-slim
 
 # Set the working directory in the container
 WORKDIR /app
 
-# Copy the requirements file into the container
+# Copy the requirements file and install dependencies
 COPY requirements.txt .
+RUN pip install -r requirements.txt
 
-# Install the required dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy the rest of the application code
+COPY . .
 
-# Copy the application code into the container
-COPY app.py .
-
-# Expose port 5000 for the Flask app
+# Expose the port Flask runs on
 EXPOSE 5000
 
-# Command to run the Flask app
+# Run the Flask app
 CMD ["python", "app.py"]
 
